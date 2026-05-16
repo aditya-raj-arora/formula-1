@@ -33,6 +33,12 @@
       </div>
 
       <div class="header-right">
+        <div class="delay-control" id="delay-control">
+          <span class="dc-label">DELAY</span>
+          <input type="number" id="delay-input" class="dc-input" min="0" max="120" step="1" value="0" title="Delay in seconds (0 = off, max 120)" />
+          <span class="dc-unit">s</span>
+          <span class="dc-buffer hidden" id="dc-buffer"><span id="dc-buffer-count">0</span> queued</span>
+        </div>
         <div class="session-status" id="session-status">
           <span class="status-dot" id="status-dot"></span>
           <span class="status-text" id="status-text">Connecting…</span>
