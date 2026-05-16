@@ -1,0 +1,27 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# FastF1 cache
+f1_cache/
+
+# Logs
+server.log
+server.err
+
+# Generated files
+generated-images/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Misc
+dummy.txt

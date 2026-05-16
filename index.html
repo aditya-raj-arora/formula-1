@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F1 Live — Race Dashboard</title>
+  <meta name="description" content="Real-time Formula 1 race data: live standings, lap times, pit stops, weather, and race control messages powered by the OpenF1 API." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ HEADER ══════════════════════════════ -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="f1-badge">F1</div>
+        <div class="header-titles">
+          <span class="header-title">LIVE RACE DASHBOARD</span>
+          <span class="header-subtitle" id="session-label">Loading session…</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="lap-counter-block">
+          <span class="lc-label">LAP</span>
+          <span class="lc-value" id="current-lap">—</span>
+          <span class="lc-sep">/</span>
+          <span class="lc-total" id="total-laps">—</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="session-status" id="session-status">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Connecting…</span>
+        </div>
+        <div class="refresh-info">
+          <span class="refresh-label">Next update in</span>
+          <span class="refresh-countdown" id="refresh-countdown">—s</span>
+        </div>
+        <button class="btn-refresh" id="btn-refresh" title="Force refresh">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Flag stripe -->
+    <div class="flag-stripe" id="flag-stripe"></div>
+  </header>
+
+  <!-- ═══════════════════════ HISTORICAL BANNER ══════════════════════════ -->
+  <div id="historical-banner" class="historical-banner hidden">
+    <span class="historical-banner-icon">🕐</span>
+    <span id="historical-banner-text">No live session — showing historical results</span>
+    <button id="historical-banner-close" class="historical-banner-close" title="Dismiss">&#x2715;</button>
+  </div>
+
+  <!-- ═══════════════════════════════ MAIN ════════════════════════════════ -->
+  <main class="main-grid">
+
+    <!-- ── LEFT COLUMN ── -->
+    <section class="col-left">
+
+      <!-- STANDINGS TABLE -->
+      <div class="card card-standings" id="card-standings">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🏁</span>
+            <h2 class="card-title">Race Standings</h2>
+          </div>
+          <span class="live-badge">LIVE</span>
+        </div>
+
+        <div class="standings-table-wrapper">
+          <table class="standings-table" id="standings-table">
+            <thead>
+              <tr>
+                <th class="th-pos">POS</th>
+                <th class="th-driver">DRIVER</th>
+                <th class="th-team">TEAM</th>
+                <th class="th-gap">GAP</th>
+                <th class="th-lap">LAST LAP</th>
+                <th class="th-tyre">TYRE</th>
+                <th class="th-pit">PITS</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="card-loading" id="standings-loading">
+          <div class="spinner"></div><span>Fetching standings…</span>
+        </div>
+      </div>
+
+      <!-- PIT STOPS -->
+      <div class="card card-pits" id="card-pits">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🛞</span>
+            <h2 class="card-title">Pit Stops</h2>
+          </div>
+          <span class="pit-count badge-neutral" id="pit-count">0 stops</span>
+        </div>
+        <div class="pit-list" id="pit-list">
+          <!-- populated by JS -->
+        </div>
+        <div class="card-loading" id="pits-loading">
+          <div class="spinner"></div><span>Fetching pit data…</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <section class="col-right">
+
+      <!-- WEATHER -->
+      <div class="card card-weather" id="card-weather">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🌦️</span>
+            <h2 class="card-title">Track Conditions</h2>
+          </div>
+        </div>
+        <div class="weather-grid" id="weather-grid">
+          <!-- populated by JS -->
+        </div>
+        <div class="card-loading" id="weather-loading">
+          <div class="spinner"></div><span>Fetching weather…</span>
+        </div>
+      </div>
+
+      <!-- RACE CONTROL -->
+      <div class="card card-racecontrol" id="card-racecontrol">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">🚩</span>
+            <h2 class="card-title">Race Control</h2>
+          </div>
+          <span class="badge-neutral" id="rc-count">0 messages</span>
+        </div>
+        <div class="rc-list" id="rc-list">
+          <!-- populated by JS -->
+        </div>
+        <div class="card-loading" id="rc-loading">
+          <div class="spinner"></div><span>Fetching messages…</span>
+        </div>
+      </div>
+
+      <!-- FASTEST LAP -->
+      <div class="card card-fastlap" id="card-fastlap">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">⚡</span>
+            <h2 class="card-title">Fastest Lap</h2>
+          </div>
+          <span class="badge-purple">PURPLE</span>
+        </div>
+        <div class="fastlap-content" id="fastlap-content">
+          <div class="fastlap-time" id="fastlap-time">—:——.———</div>
+          <div class="fastlap-driver" id="fastlap-driver">—</div>
+          <div class="fastlap-meta" id="fastlap-meta">Lap — · Team —</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════ TOAST ══════════════════════════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ═══════════════════════════ TICKER ═════════════════════════════════ -->
+  <div class="ticker-bar">
+    <div class="ticker-label">RACE CONTROL</div>
+    <div class="ticker-track">
+      <div class="ticker-content" id="ticker-content">Loading race control messages…</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
