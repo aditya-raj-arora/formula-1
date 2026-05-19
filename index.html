@@ -51,6 +51,9 @@
           <span class="dc-unit">s</span>
           <span class="dc-buffer hidden" id="dc-buffer"><span id="dc-buffer-count">0</span> queued</span>
         </div>
+        <button class="header-icon-btn" id="notif-toggle" title="Enable race control notifications">🔔</button>
+        <button class="header-icon-btn" id="kb-help-btn" title="Keyboard shortcuts (?)">⌨️</button>
+        <button class="header-icon-btn" id="theme-toggle" title="Toggle dark/light mode">☀️</button>
         <div class="session-status" id="session-status">
           <span class="status-dot" id="status-dot"></span>
           <span class="status-text" id="status-text">Connecting…</span>
@@ -81,6 +84,17 @@
 
       <!-- ── RACE STANDINGS TAB ── -->
       <div class="tab-content active" id="tab-standings">
+
+        <!-- Standings sub-tabs -->
+        <div class="standings-sub-bar">
+          <button class="standings-sub-btn active" data-sub="timings">Timings</button>
+          <button class="standings-sub-btn" data-sub="strategy">Tyre Strategy</button>
+          <button class="standings-sub-btn" data-sub="gapchart">Gap Chart</button>
+          <button class="standings-sub-btn" data-sub="speed">Speed Trap</button>
+        </div>
+
+        <!-- Timings sub-content -->
+        <div class="standings-sub active" id="sub-timings">
 
         <!-- Timing table -->
         <div class="timing-table-wrap">
@@ -115,7 +129,45 @@
             <span class="rc-section-title">RACE CONTROL</span>
             <span class="badge-neutral" id="rc-count">0 messages</span>
           </div>
+          <div class="rc-filters" id="rc-filters">
+            <button class="rc-filter-pill active" data-filter="all">All</button>
+            <button class="rc-filter-pill" data-filter="safety">Safety Car</button>
+            <button class="rc-filter-pill" data-filter="flag">Flags</button>
+            <button class="rc-filter-pill" data-filter="drs">DRS</button>
+            <button class="rc-filter-pill" data-filter="penalty">Penalty</button>
+          </div>
           <div class="rc-list" id="rc-list"></div>
+        </div>
+
+        </div><!-- /sub-timings -->
+
+        <!-- Strategy sub-content -->
+        <div class="standings-sub" id="sub-strategy">
+          <div class="strat-legend">
+            <span class="strat-leg-item"><span class="strat-leg-dot" style="background:#e10600"></span>SOFT</span>
+            <span class="strat-leg-item"><span class="strat-leg-dot" style="background:#f5c518"></span>MEDIUM</span>
+            <span class="strat-leg-item"><span class="strat-leg-dot" style="background:#d0d0d0"></span>HARD</span>
+            <span class="strat-leg-item"><span class="strat-leg-dot" style="background:#27c16a"></span>INTER</span>
+            <span class="strat-leg-item"><span class="strat-leg-dot" style="background:#3498db"></span>WET</span>
+          </div>
+          <div id="strategy-body"></div>
+        </div>
+
+        <!-- Speed Trap sub-content -->
+        <div class="standings-sub" id="sub-speed">
+          <div id="speed-trap-body"></div>
+        </div>
+
+        <!-- Gap Chart sub-content -->
+        <div class="standings-sub" id="sub-gapchart">
+          <div class="gap-chart-controls">
+            <button class="chart-mode-btn active" id="chart-pos-btn">Position</button>
+            <button class="chart-mode-btn" id="chart-gap-btn">Gap to Leader</button>
+            <button class="chart-mode-btn" id="chart-reload-btn">&#8635; Reload</button>
+          </div>
+          <div class="gap-chart-wrap" id="gap-chart-wrap">
+            <div class="empty-state">Select the Gap Chart tab to load race history</div>
+          </div>
         </div>
 
       </div>
@@ -148,7 +200,7 @@
             <table class="champ-table" id="champ-drivers-table">
               <thead>
                 <tr>
-                  <th>POS</th><th>DRIVER</th><th>TEAM</th><th>POINTS</th>
+                  <th>POS</th><th>DRIVER</th><th>TEAM</th><th>POINTS</th><th>GAP</th>
                   <th>SIM POS</th><th>SIM TOTAL</th><th>DELTA</th>
                 </tr>
               </thead>
@@ -180,7 +232,34 @@
   <!-- TOAST -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- H2H MODAL -->
+  <div id="h2h-modal" class="h2h-modal hidden">
+    <div class="h2h-backdrop" id="h2h-backdrop"></div>
+    <div class="h2h-panel">
+      <button class="h2h-close" id="h2h-close">&#x2715;</button>
+      <div id="h2h-content"></div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD HELP MODAL -->
+  <div id="kb-help" class="kb-help hidden">
+    <div class="kb-backdrop" id="kb-backdrop"></div>
+    <div class="kb-panel">
+      <button class="h2h-close" id="kb-help-close">&#x2715;</button>
+      <div class="kb-title">Keyboard Shortcuts</div>
+      <div class="kb-list">
+        <div class="kb-item"><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span><span class="kb-desc">Switch tabs</span></div>
+        <div class="kb-item"><span class="kbd">T</span><span class="kb-desc">Tyre Strategy</span></div>
+        <div class="kb-item"><span class="kbd">G</span><span class="kb-desc">Gap Chart</span></div>
+        <div class="kb-item"><span class="kbd">S</span><span class="kb-desc">Speed Trap</span></div>
+        <div class="kb-item"><span class="kbd">Esc</span><span class="kb-desc">Close modal / back to calendar</span></div>
+        <div class="kb-item"><span class="kbd">?</span><span class="kb-desc">Toggle this help</span></div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

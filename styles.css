@@ -509,6 +509,7 @@ body::before {
   display: flex; align-items: center; gap: 10px; padding: 24px;
   color: var(--text-2); font-size: 12px; justify-content: center;
 }
+.champ-loading.hidden    { display: none; }
 .champ-table-wrap        { overflow: auto; flex: 1; }
 .champ-table-wrap.hidden { display: none; }
 
@@ -843,3 +844,397 @@ body::before {
 .toast-rc { border-left: 3px solid var(--red); }
 @keyframes toast-in  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* ── LIGHT MODE ─────────────────────────────────────────────────────────── */
+body.light {
+  --bg:        #f0f0f8;
+  --bg-2:      #e8e8f4;
+  --bg-3:      #ddddf0;
+  --surface:   rgba(0,0,0,0.04);
+  --surface-2: rgba(0,0,0,0.07);
+  --border:    rgba(0,0,0,0.10);
+  --border-2:  rgba(0,0,0,0.18);
+  --text-1:    #0a0a14;
+  --text-2:    #44446a;
+  --text-3:    #7a7a9a;
+}
+body.light::before {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+}
+body.light .header { background: rgba(240,240,248,0.95); }
+body.light .timing-table thead tr { background: var(--bg-2); }
+
+/* ── HEADER ICON BUTTONS (theme, notifications) ─────────────────────────── */
+.header-icon-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 14px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+  flex-shrink: 0;
+}
+.header-icon-btn:hover { background: var(--surface-2); border-color: var(--border-2); }
+.header-icon-btn.active { border-color: var(--yellow); background: rgba(245,197,24,0.12); }
+
+/* ── STANDINGS SUB-TABS ─────────────────────────────────────────────────── */
+.standings-sub-bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+.standings-sub-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 12px 5px;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+.standings-sub-btn:hover { color: var(--text-1); }
+.standings-sub-btn.active { color: var(--red); border-bottom-color: var(--red); }
+
+.standings-sub { display: none; }
+.standings-sub.active { display: block; }
+
+/* ── TYRE STRATEGY CHART ────────────────────────────────────────────────── */
+.strat-legend {
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.strat-leg-item { display: flex; align-items: center; gap: 4px; }
+.strat-leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+.strat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.strat-row:last-child { border-bottom: none; }
+.strat-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-2);
+  width: 36px;
+  flex-shrink: 0;
+  padding-left: 5px;
+}
+.strat-track {
+  flex: 1;
+  position: relative;
+  height: 22px;
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.strat-bar {
+  position: absolute;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.75);
+  border-radius: 2px;
+  transition: width 0.3s ease, left 0.3s ease;
+  min-width: 14px;
+  overflow: hidden;
+}
+
+/* ── GAP / RACE HISTORY CHART ───────────────────────────────────────────── */
+.gap-chart-controls {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px 0;
+}
+.chart-mode-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.chart-mode-btn:hover { background: var(--surface-2); color: var(--text-1); }
+.chart-mode-btn.active { background: rgba(225,6,0,0.12); border-color: var(--red); color: var(--red); }
+.gap-chart-wrap {
+  padding: 10px 14px 14px;
+  height: 360px;
+  position: relative;
+}
+.gap-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+/* ── COUNTDOWN TIMER ────────────────────────────────────────────────────── */
+.sched-countdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(225,6,0,0.08);
+  border: 1px solid rgba(225,6,0,0.2);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  font-size: 11px;
+}
+.cd-label {
+  color: var(--text-2);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+.cd-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--red);
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.cd-icon { font-size: 14px; }
+
+/* ── SESSION HISTORY BUTTON ─────────────────────────────────────────────── */
+.track-session-item { gap: 8px; }
+.session-hist-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-3);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.session-hist-btn:hover { background: var(--surface-2); color: var(--text-1); }
+.session-chart-btn {
+  background: rgba(52,152,219,0.1);
+  border: 1px solid rgba(52,152,219,0.3);
+  border-radius: 4px;
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast);
+}
+.session-chart-btn:hover { background: rgba(52,152,219,0.2); }
+
+/* ── CHART TOOLTIP (dark/light aware) ──────────────────────────────────── */
+body.light .chart-mode-btn { color: var(--text-2); }
+body.light .gap-chart-wrap { background: transparent; }
+
+/* ── FEATURE 1: ADD TO CALENDAR BUTTON ─────────────────────────────────── */
+.track-cal-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast);
+  margin-top: 6px;
+  white-space: nowrap;
+}
+.track-cal-btn:hover { border-color: var(--border-2); color: var(--text-1); }
+
+/* ── FEATURE 2: CHAMPIONSHIP GAP COLUMN ────────────────────────────────── */
+.champ-gap {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.champ-gap-leader {
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+/* ── FEATURE 3: RACE CONTROL FILTER PILLS ──────────────────────────────── */
+.rc-filters { display: flex; gap: 6px; padding: 6px 10px; flex-wrap: wrap; }
+.rc-filter-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-3);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rc-filter-pill:hover { color: var(--text-1); border-color: var(--border-2); }
+.rc-filter-pill.active {
+  background: rgba(225,6,0,0.12);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ── FEATURE 4: PIT MARKERS ON TYRE STRATEGY ───────────────────────────── */
+.strat-pit-marker {
+  position: absolute;
+  top: 0; height: 100%;
+  width: 2px;
+  background: rgba(255,255,255,0.9);
+  z-index: 2;
+  transform: translateX(-50%);
+}
+body.light .strat-pit-marker { background: rgba(0,0,0,0.6); }
+
+/* ── FEATURE 5: SPEED TRAP SUB-TAB ─────────────────────────────────────── */
+.spd-header {
+  display: flex;
+  padding: 6px 14px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+}
+.spd-h-rank { width: 34px; }
+.spd-h-driver { flex: 1; }
+.spd-h-speed { width: 80px; text-align: right; }
+.spd-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 14px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.spd-rank {
+  width: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+}
+.spd-driver {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.spd-bar-bg {
+  height: 3px;
+  background: var(--surface-2);
+  border-radius: 2px;
+}
+.spd-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+.spd-name { display: flex; align-items: center; gap: 4px; }
+.spd-tla {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-1);
+  padding-left: 5px;
+}
+.spd-full { font-size: 9px; color: var(--text-3); padding-left: 4px; }
+.spd-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  width: 80px;
+  text-align: right;
+}
+.spd-unit { font-size: 9px; color: var(--text-3); font-weight: 400; }
+
+/* ── FEATURE 6: WEATHER HISTORY CHART ──────────────────────────────────── */
+.track-weather-section {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── FEATURE 7: DRIVER H2H COMPARISON MODAL ────────────────────────────── */
+.h2h-modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
+.h2h-modal.hidden { display: none; }
+.h2h-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+.h2h-panel {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: min(480px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.h2h-close { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-2); font-size: 18px; cursor: pointer; }
+.h2h-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; margin-bottom: 16px; }
+.h2h-driver-a { text-align: left; padding-bottom: 6px; }
+.h2h-driver-b { text-align: right; padding-bottom: 6px; }
+.h2h-tla { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--text-1); }
+.h2h-name { font-size: 11px; color: var(--text-2); font-weight: 600; }
+.h2h-team { font-size: 9px; color: var(--text-3); }
+.h2h-vs { font-size: 11px; font-weight: 900; color: var(--text-3); letter-spacing: 2px; text-align: center; }
+.h2h-table { width: 100%; border-collapse: collapse; }
+.h2h-table td { padding: 5px 8px; font-size: 10px; border-bottom: 1px solid var(--border); }
+.h2h-label { color: var(--text-3); font-weight: 700; letter-spacing: 0.5px; font-size: 9px; text-align: center; }
+.h2h-val-a { font-family: 'JetBrains Mono', monospace; color: var(--text-1); font-weight: 600; }
+.h2h-val-b { font-family: 'JetBrains Mono', monospace; color: var(--text-1); font-weight: 600; text-align: right; }
+.h2h-selected .driver-cell { outline: 2px solid var(--yellow); border-radius: 4px; }
+
+/* ── FEATURE 9: KEYBOARD SHORTCUTS MODAL ───────────────────────────────── */
+.kb-help { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
+.kb-help.hidden { display: none; }
+.kb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); }
+.kb-panel {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  width: min(340px, 90vw);
+}
+.kb-title { font-size: 12px; font-weight: 900; letter-spacing: 1px; color: var(--text-1); margin-bottom: 14px; }
+.kb-list { display: flex; flex-direction: column; gap: 8px; }
+.kb-item { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.kbd {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.kb-desc { color: var(--text-2); margin-left: 4px; }

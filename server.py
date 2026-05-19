@@ -565,13 +565,114 @@ async def get_schedule():
                 {
                     "session_name": s.get("session_name"),
                     "session_type": s.get("session_type"),
-                    "date_start": s.get("date_start"),
-                    "date_end":   s.get("date_end"),
+                    "session_key":  s.get("session_key"),
+                    "date_start":   s.get("date_start"),
+                    "date_end":     s.get("date_end"),
                 }
                 for s in meeting_sessions
             ], key=lambda x: x.get("date_start") or ""),
         })
     return JSONResponse(content={"meetings": results, "year": year})
+
+
+@app.get("/api/race-history/{session_key}")
+async def get_race_history(session_key: int):
+    """Per-driver lap-by-lap position and gap to leader, used for the race history chart."""
+    try:
+        def _fetch():
+            return (
+                openf1("/drivers", {"session_key": session_key}),
+                openf1("/laps",    {"session_key": session_key}),
+            )
+        drivers_data, laps_data = await asyncio.get_event_loop().run_in_executor(None, _fetch)
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+
+    laps_by_driver: dict[str, list] = {}
+    for lap in laps_data:
+        laps_by_driver.setdefault(str(lap["driver_number"]), []).append(lap)
+
+    all_lap_nums = [l.get("lap_number", 0) for l in laps_data if l.get("lap_number")]
+    max_lap = max(all_lap_nums) if all_lap_nums else 0
+
+    cumulative: dict[str, dict[int, float]] = {}
+    for num, laps in laps_by_driver.items():
+        cum = 0.0
+        cumulative[num] = {}
+        for lap in sorted(laps, key=lambda x: x.get("lap_number", 0)):
+            lap_num = lap.get("lap_number", 0)
+            dur = lap.get("lap_duration")
+            if dur and float(dur) > 0:
+                cum += float(dur)
+            cumulative[num][lap_num] = cum
+
+    gap_data: dict[str, list] = {}
+    for lap_num in range(1, max_lap + 1):
+        present = [(n, cumulative[n][lap_num]) for n in cumulative if lap_num in cumulative[n]]
+        if not present:
+            continue
+        present.sort(key=lambda x: x[1])
+        leader_time = present[0][1]
+        for pos_i, (num, cum_time) in enumerate(present):
+            gap_data.setdefault(num, []).append({
+                "lap": lap_num,
+                "gap": round(cum_time - leader_time, 3),
+                "pos": pos_i + 1,
+            })
+
+    driver_info = {
+        str(d["driver_number"]): {
+            "name":   d.get("name_acronym", f'#{d["driver_number"]}'),
+            "team":   d.get("team_name", ""),
+            "colour": (d.get("team_colour") or "888888").lstrip("#"),
+        }
+        for d in drivers_data
+    }
+    return JSONResponse(content={"gap_data": gap_data, "drivers": driver_info, "max_lap": max_lap})
+
+
+@app.get("/api/session-history/{session_key}")
+async def get_session_history(session_key: int):
+    """Historical timing payload for any completed session (FP, Quali, Race)."""
+    try:
+        def _fetch():
+            sessions = openf1("/sessions", {"session_key": session_key})
+            if not sessions:
+                raise ValueError("Session not found")
+            s = sessions[0]
+            year = s.get("year") or datetime.datetime.now().year
+            session_name = s.get("session_name", "Session")
+            meetings = openf1("/meetings", {"meeting_key": s["meeting_key"]})
+            meeting_name = meetings[0].get("meeting_name", "Grand Prix") if meetings else "Grand Prix"
+            drivers      = openf1("/drivers",      {"session_key": session_key})
+            laps         = openf1("/laps",         {"session_key": session_key})
+            pits         = openf1("/pit",          {"session_key": session_key})
+            stints       = openf1("/stints",       {"session_key": session_key})
+            weather_list = openf1("/weather",      {"session_key": session_key})
+            race_control = openf1("/race_control", {"session_key": session_key})
+            return _build_historical_payload(
+                session_key, session_name, meeting_name, year,
+                drivers, laps, pits, stints, weather_list, race_control,
+            )
+        payload_str = await asyncio.get_event_loop().run_in_executor(None, _fetch)
+        return JSONResponse(content=json.loads(payload_str))
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+
+
+@app.get("/api/weather-history/{session_key}")
+async def get_weather_history(session_key: int):
+    try:
+        weather = await asyncio.get_event_loop().run_in_executor(
+            None, lambda: openf1("/weather", {"session_key": session_key})
+        )
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+    return JSONResponse(content={"data": [
+        {"time": w.get("date", ""), "air": w.get("air_temperature"), "track": w.get("track_temperature"),
+         "humidity": w.get("humidity"), "wind": w.get("wind_speed"), "rainfall": bool(w.get("rainfall"))}
+        for w in weather
+    ]})
 
 
 @app.get("/api/historical")
