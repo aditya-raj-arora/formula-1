@@ -506,7 +506,73 @@ class BroadcastSignalRClient(SignalRClient):
             asyncio.run_coroutine_threadsafe(manager.broadcast(formatted), loop)
 
 
-# ── HTTP endpoint for historical data ────────────────────────────────────────
+# ── HTTP endpoints ────────────────────────────────────────────────────────────
+
+@app.get("/api/championship")
+async def get_championship():
+    if championship_cache is None:
+        return JSONResponse(content={"status": "loading"}, status_code=202)
+    return JSONResponse(content=championship_cache)
+
+
+@app.get("/api/schedule")
+async def get_schedule():
+    now = datetime.datetime.now(datetime.timezone.utc)
+    year = now.year
+    try:
+        meetings = openf1("/meetings", {"year": year})
+        sessions = openf1("/sessions", {"year": year})
+    except Exception as exc:
+        return JSONResponse(content={"error": str(exc)}, status_code=500)
+
+    sessions_by_meeting: dict[int, list] = {}
+    for s in sessions:
+        mk = s.get("meeting_key")
+        if mk:
+            sessions_by_meeting.setdefault(mk, []).append(s)
+
+    results = []
+    for m in sorted(meetings, key=lambda x: x.get("date_start", "")):
+        mk = m.get("meeting_key")
+        meeting_sessions = sessions_by_meeting.get(mk, [])
+        race = next((s for s in meeting_sessions if s.get("session_type") == "Race"), None)
+        if not race:
+            continue
+        race_date_str = race.get("date_start", "")
+        try:
+            race_date = datetime.datetime.fromisoformat(race_date_str).astimezone(datetime.timezone.utc)
+        except Exception:
+            continue
+        is_next = False
+        for r in results:
+            if r.get("is_next"):
+                break
+        else:
+            is_next = race_date > now
+
+        results.append({
+            "meeting_key": mk,
+            "meeting_name": m.get("meeting_name", ""),
+            "country_name": m.get("country_name", ""),
+            "circuit_short_name": m.get("circuit_short_name", ""),
+            "circuit_key": m.get("circuit_key"),
+            "location": m.get("location", ""),
+            "gmt_offset": m.get("gmt_offset", ""),
+            "race_date": race_date_str,
+            "is_past": race_date < now,
+            "is_next": is_next,
+            "sessions": sorted([
+                {
+                    "session_name": s.get("session_name"),
+                    "session_type": s.get("session_type"),
+                    "date_start": s.get("date_start"),
+                    "date_end":   s.get("date_end"),
+                }
+                for s in meeting_sessions
+            ], key=lambda x: x.get("date_start") or ""),
+        })
+    return JSONResponse(content={"meetings": results, "year": year})
+
 
 @app.get("/api/historical")
 async def get_historical():
@@ -563,6 +629,8 @@ async def startup_event():
             serving_historical = False
     else:
         logger.info("Live/imminent session detected — skipping historical load.")
+
+    asyncio.create_task(_load_championship_task())
 
     thread = threading.Thread(target=start_signalr_client, daemon=True)
     thread.start()

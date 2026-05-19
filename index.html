@@ -30,12 +30,24 @@
           <span class="lc-sep">/</span>
           <span class="lc-total" id="total-laps">—</span>
         </div>
+        <div class="weather-strip" id="weather-strip">
+          <span class="ws-item"><span class="ws-label">TRC</span><span class="ws-val" id="ws-track">—°</span></span>
+          <span class="ws-sep">|</span>
+          <span class="ws-item"><span class="ws-label">AIR</span><span class="ws-val" id="ws-air">—°</span></span>
+          <span class="ws-sep">|</span>
+          <span class="ws-item"><span class="ws-label">HUM</span><span class="ws-val" id="ws-hum">—%</span></span>
+          <span class="ws-sep">|</span>
+          <span class="ws-item"><span class="ws-label">WND</span><span class="ws-val" id="ws-wind">— m/s</span></span>
+          <span class="ws-sep">|</span>
+          <span class="ws-val ws-cond" id="ws-cond">—</span>
+        </div>
+        <div class="track-status-pill" id="track-status-pill">ALL CLEAR</div>
       </div>
 
       <div class="header-right">
         <div class="delay-control" id="delay-control">
           <span class="dc-label">DELAY</span>
-          <input type="number" id="delay-input" class="dc-input" min="0" max="120" step="1" value="0" title="Delay in seconds (0 = off, max 120)" />
+          <input type="number" id="delay-input" class="dc-input" min="0" max="120" step="1" value="0" title="Delay in seconds" />
           <span class="dc-unit">s</span>
           <span class="dc-buffer hidden" id="dc-buffer"><span id="dc-buffer-count">0</span> queued</span>
         </div>
@@ -43,21 +55,12 @@
           <span class="status-dot" id="status-dot"></span>
           <span class="status-text" id="status-text">Connecting…</span>
         </div>
-        <div class="refresh-info">
-          <span class="refresh-label">Next update in</span>
-          <span class="refresh-countdown" id="refresh-countdown">—s</span>
-        </div>
-        <button class="btn-refresh" id="btn-refresh" title="Force refresh">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        </button>
       </div>
     </div>
-
-    <!-- Flag stripe -->
     <div class="flag-stripe" id="flag-stripe"></div>
   </header>
 
-  <!-- ═══════════════════════ HISTORICAL BANNER ══════════════════════════ -->
+  <!-- ════════════════════════ HISTORICAL BANNER ═══════════════════════════ -->
   <div id="historical-banner" class="historical-banner hidden">
     <span class="historical-banner-icon">🕐</span>
     <span id="historical-banner-text">No live session — showing historical results</span>
@@ -66,128 +69,116 @@
 
   <!-- ═══════════════════════════════ MAIN ════════════════════════════════ -->
   <main class="main-grid">
+    <section class="timing-panel">
 
-    <!-- ── LEFT COLUMN ── -->
-    <section class="col-left">
+      <!-- Tab buttons -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="standings">🏁 Race Standings</button>
+        <button class="tab-btn" data-tab="championship">🏆 Championship</button>
+        <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
+        <span class="live-badge" id="standings-live-badge">LIVE</span>
+      </div>
 
-      <!-- STANDINGS TABLE -->
-      <div class="card card-standings" id="card-standings">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🏁</span>
-            <h2 class="card-title">Race Standings</h2>
-          </div>
-          <span class="live-badge">LIVE</span>
-        </div>
+      <!-- ── RACE STANDINGS TAB ── -->
+      <div class="tab-content active" id="tab-standings">
 
-        <div class="standings-table-wrapper">
-          <table class="standings-table" id="standings-table">
+        <!-- Timing table -->
+        <div class="timing-table-wrap">
+          <table class="timing-table" id="timing-table">
             <thead>
               <tr>
-                <th class="th-pos">POS</th>
-                <th class="th-driver">DRIVER</th>
-                <th class="th-team">TEAM</th>
-                <th class="th-gap">GAP</th>
-                <th class="th-lap">LAST LAP</th>
-                <th class="th-tyre">TYRE</th>
-                <th class="th-pit">PITS</th>
+                <th class="tc-pos">POS</th>
+                <th class="tc-driver">DRIVER</th>
+                <th class="tc-interval">INT</th>
+                <th class="tc-leader">LEADER</th>
+                <th class="tc-laps">LAPS</th>
+                <th class="tc-tyre">TYRE</th>
+                <th class="tc-hist">TYRE HISTORY</th>
+                <th class="tc-lastlap">LAST LAP</th>
+                <th class="tc-bestlap">BEST LAP</th>
+                <th class="tc-pit">PIT</th>
+                <th class="tc-sector">S1</th>
+                <th class="tc-sector">S2</th>
+                <th class="tc-sector">S3</th>
+                <th class="tc-spd">SPD</th>
+                <th class="tc-delta">POS</th>
               </tr>
             </thead>
-            <tbody id="standings-body">
-              <!-- populated by JS -->
-            </tbody>
+            <tbody id="timing-body"></tbody>
           </table>
         </div>
-        <div class="card-loading" id="standings-loading">
-          <div class="spinner"></div><span>Fetching standings…</span>
+
+        <!-- Race Control (below table) -->
+        <div class="rc-section">
+          <div class="rc-section-header">
+            <span class="rc-section-icon">🚩</span>
+            <span class="rc-section-title">RACE CONTROL</span>
+            <span class="badge-neutral" id="rc-count">0 messages</span>
+          </div>
+          <div class="rc-list" id="rc-list"></div>
+        </div>
+
+      </div>
+
+      <!-- ── SCHEDULE TAB ── -->
+      <div class="tab-content" id="tab-schedule">
+        <div id="schedule-view">
+          <!-- schedule-list or schedule-detail rendered by JS -->
         </div>
       </div>
 
-      <!-- PIT STOPS -->
-      <div class="card card-pits" id="card-pits">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🛞</span>
-            <h2 class="card-title">Pit Stops</h2>
+      <!-- ── CHAMPIONSHIP TAB ── -->
+      <div class="tab-content" id="tab-championship">
+        <div class="sub-tab-bar">
+          <button class="sub-tab active" data-sub="drivers">Drivers</button>
+          <button class="sub-tab" data-sub="teams">Constructors</button>
+        </div>
+
+        <div class="what-if-bar">
+          <span class="wif-label">⚡ WHAT-IF SIMULATOR</span>
+          <span class="wif-hint">Use ▲▼ buttons on a driver to simulate their race finish position</span>
+          <button class="wif-reset" id="wif-reset">Reset All</button>
+        </div>
+
+        <div class="sub-content active" id="sub-drivers">
+          <div class="champ-loading" id="champ-loading">
+            <div class="spinner"></div><span>Computing championship standings…</span>
           </div>
-          <span class="pit-count badge-neutral" id="pit-count">0 stops</span>
+          <div class="champ-table-wrap hidden" id="champ-drivers-wrap">
+            <table class="champ-table" id="champ-drivers-table">
+              <thead>
+                <tr>
+                  <th>POS</th><th>DRIVER</th><th>TEAM</th><th>POINTS</th>
+                  <th>SIM POS</th><th>SIM TOTAL</th><th>DELTA</th>
+                </tr>
+              </thead>
+              <tbody id="champ-drivers-body"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="pit-list" id="pit-list">
-          <!-- populated by JS -->
-        </div>
-        <div class="card-loading" id="pits-loading">
-          <div class="spinner"></div><span>Fetching pit data…</span>
+
+        <div class="sub-content" id="sub-teams">
+          <div class="champ-table-wrap" id="champ-teams-wrap">
+            <table class="champ-table" id="champ-teams-table">
+              <thead>
+                <tr>
+                  <th>POS</th><th>CONSTRUCTOR</th><th>POINTS</th><th>SIM TOTAL</th><th>DELTA</th>
+                </tr>
+              </thead>
+              <tbody id="champ-teams-body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
     </section>
-
-    <!-- ── RIGHT COLUMN ── -->
-    <section class="col-right">
-
-      <!-- WEATHER -->
-      <div class="card card-weather" id="card-weather">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🌦️</span>
-            <h2 class="card-title">Track Conditions</h2>
-          </div>
-        </div>
-        <div class="weather-grid" id="weather-grid">
-          <!-- populated by JS -->
-        </div>
-        <div class="card-loading" id="weather-loading">
-          <div class="spinner"></div><span>Fetching weather…</span>
-        </div>
-      </div>
-
-      <!-- RACE CONTROL -->
-      <div class="card card-racecontrol" id="card-racecontrol">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">🚩</span>
-            <h2 class="card-title">Race Control</h2>
-          </div>
-          <span class="badge-neutral" id="rc-count">0 messages</span>
-        </div>
-        <div class="rc-list" id="rc-list">
-          <!-- populated by JS -->
-        </div>
-        <div class="card-loading" id="rc-loading">
-          <div class="spinner"></div><span>Fetching messages…</span>
-        </div>
-      </div>
-
-      <!-- FASTEST LAP -->
-      <div class="card card-fastlap" id="card-fastlap">
-        <div class="card-header">
-          <div class="card-title-group">
-            <span class="card-icon">⚡</span>
-            <h2 class="card-title">Fastest Lap</h2>
-          </div>
-          <span class="badge-purple">PURPLE</span>
-        </div>
-        <div class="fastlap-content" id="fastlap-content">
-          <div class="fastlap-time" id="fastlap-time">—:——.———</div>
-          <div class="fastlap-driver" id="fastlap-driver">—</div>
-          <div class="fastlap-meta" id="fastlap-meta">Lap — · Team —</div>
-        </div>
-      </div>
-
-    </section>
-
   </main>
 
-  <!-- ═══════════════════════════ TOAST ══════════════════════════════════ -->
-  <div class="toast-container" id="toast-container"></div>
+  <!-- RC OVERLAY (F1 TV style) -->
+  <div class="rc-overlay-container" id="rc-overlay-container"></div>
 
-  <!-- ═══════════════════════════ TICKER ═════════════════════════════════ -->
-  <div class="ticker-bar">
-    <div class="ticker-label">RACE CONTROL</div>
-    <div class="ticker-track">
-      <div class="ticker-content" id="ticker-content">Loading race control messages…</div>
-    </div>
-  </div>
+  <!-- TOAST -->
+  <div class="toast-container" id="toast-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <script src="app.js"></script>
